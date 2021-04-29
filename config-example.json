@@ -1,0 +1,66 @@
+{
+	"pipeline": [
+		{
+			"name": "pipeline-0",
+			"type": "video",
+			"input": [
+				{
+					"name": "camera-0",
+					"type": "stream",
+					"url": "rtsp://admin:Password1@192.168.88.11",
+					"protocol": "tcp",
+					"timeout": 1000,
+					"live": true,
+					"out": [
+						"delay-0"
+					]
+				},
+				{
+					"name": "camera-1",
+					"type": "stream",
+					"url": "/data/test.mp4",
+					"live": false,
+					"out": [
+						"delay-0"
+					]
+				}
+			],
+			"processing": [
+				{
+					"name": "delay-0",
+					"type": "dummy",
+					"delay": 1000,
+					"drop" : false,
+					"out": [
+						"detector-0"
+					]
+				},
+				{
+					"name": "detector-0",
+					"type": "detect",
+					"out": [
+						"sender-0",
+						"sender-1"
+					]
+				}
+			],
+			"output": [
+				{
+					"name": "sender-0",
+					"type": "http",
+					"resend_interval": 1,
+					"local_time": false,
+					"url": "https://backend.example.com",
+					"token": "12345",
+					"api": "/api/v1/event"
+				},
+				{
+					"name": "sender-1",
+					"type": "disk",
+					"local_time": true,
+					"path": "/data/events"
+				}
+			]
+		}
+	]
+}

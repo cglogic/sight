@@ -1,0 +1,55 @@
+{
+	"pipeline": [
+		{
+			"name": "pipeline-0",
+			"type": "video",
+			"input": [
+				{
+					"name": "camera-0",
+					"type": "stream",
+					"url": "rtsp://admin:Password1@192.168.88.11",
+					"protocol": "tcp",
+					"timeout": 1000,
+					"live": true,
+					"out": [
+						"delay-0"
+					]
+				}
+			],
+			"processing": [
+				{
+					"name": "delay-0",
+					"type": "dummy",
+					"delay": 50,
+					"drop" : false,
+					"out": [
+						"detector-0"
+					]
+				},
+				{
+					"name": "detector-0",
+					"type": "detect",
+					"out": [
+						"delay-1"
+					]
+				},
+				{
+					"name": "delay-1",
+					"type": "dummy",
+					"delay": 50,
+					"drop" : false,
+					"out": [
+						"sender-0"
+					]
+				}
+			],
+			"output": [
+				{
+					"name": "sender-0",
+					"type": "dummy",
+					"local_time": true
+				}
+			]
+		}
+	]
+}

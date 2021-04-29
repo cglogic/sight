@@ -1,0 +1,4 @@
+_s = "//build/get-source-files.sh"
+_d = rebase_path(".", root_build_dir)
+_f = exec_script("$_s", ["$_d"], "list lines")
+sources = get_path_info(_f, "abspath")

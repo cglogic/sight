@@ -1,0 +1,82 @@
+# Main build config
+
+target = "sight"
+srcdir = "src"
+
+declare_args() {
+  enable_pkgconf = true
+  debug_build = true
+}
+
+if (enable_pkgconf) {
+  pkgcmd = "//build/pkgconf-wrapper.sh"
+  libdep = [
+    "gflags",
+    "libglog",
+    "nlohmann_json",
+    "libavformat",
+    "libavcodec",
+    "libswscale",
+    "libavutil",
+    "openssl",
+  ]
+}
+
+executable("$target") {
+  import("//$srcdir/sources.gni")
+
+  cflags = []
+  if (debug_build) {
+    cflags += [
+      "-O0",
+      "-g",
+    ]
+  } else {
+    cflags += [
+      "-O2",
+    ]
+  }
+  if (enable_pkgconf) {
+    cflags += exec_script("$pkgcmd", ["--cflags"] + libdep, "list lines")
+  } else {
+    cflags += [
+    ]
+  }
+
+  ldflags = [
+    "-lpthread",
+  ]
+  if (debug_build) {
+    ldflags += [
+      "-fsanitize=address",
+      "-fsanitize=undefined",
+    ]
+  }
+  if (enable_pkgconf) {
+    ldflags += exec_script("$pkgcmd", ["--libs"] + libdep, "list lines")
+  } else {
+    ldflags += [
+      "-lgflags",
+      "-lglog",
+      "-lavformat",
+      "-lavcodec",
+      "-lswscale",
+      "-lavutil",
+      "-lcrypto",
+      "-lssl",
+    ]
+  }
+
+  defines = [
+    "VERSION=1.0",
+  ]
+  if (debug_build) {
+    defines += [
+      "DEBUG",
+    ]
+  }
+
+  include_dirs = [
+    "src",
+  ]
+}
