@@ -28,7 +28,7 @@ Slot::Slot(const Slot& other) :
 	mSource->width = other.mSource->width;
 	mSource->height = other.mSource->height;
 
-	if (av_frame_get_buffer(mSource, 32) < 0) {
+	if (av_frame_get_buffer(mSource, 0) < 0) {
 		LOG(ERROR) << "Failed to allocate buffer";
 		return;
 	}
@@ -55,6 +55,7 @@ Slot::Slot(Slot&& other) :
 
 Slot::~Slot() {
 	clearConverted();
+	av_frame_unref(mSource);
 	av_frame_free(&mSource);
 }
 

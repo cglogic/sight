@@ -34,8 +34,10 @@ Dummy::~Dummy() {
 			avcodec_send_frame(e.second.context, NULL);
 		}
 		avcodec_close(e.second.context);
+		avcodec_free_context(&e.second.context);
 	}
 	for (auto& p : mPacket) {
+		av_packet_unref(p.second.packet);
 		av_packet_free(&p.second.packet);
 	}
 }
@@ -168,6 +170,7 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 				avcodec_send_frame(enc.context, NULL);
 			}
 			avcodec_close(enc.context);
+			avcodec_free_context(&enc.context);
 			auto it = mEncoder.find(streamId);
 			mEncoder.erase(it);
 		}

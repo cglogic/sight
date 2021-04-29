@@ -176,7 +176,9 @@ void Stream::stop() {
 	}
 
 	avformat_close_input(&mFormatContext);
+	avcodec_close(mCodecContext);
 	avcodec_free_context(&mCodecContext);
+	av_packet_unref(mPacket);
 	av_packet_free(&mPacket);
 
 	mFormatContext = NULL;

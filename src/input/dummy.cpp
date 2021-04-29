@@ -31,6 +31,7 @@ Dummy::Dummy(Dummy&& other) :
 }
 
 Dummy::~Dummy() {
+	av_frame_unref(mFrame);
 	av_frame_free(&mFrame);
 }
 
