@@ -1,11 +1,15 @@
 # Main build config
 
 target = "sight"
-srcdir = "src"
+src = "src"
 
 declare_args() {
   enable_pkgconf = true
   debug_build = true
+  input_stream = true
+  processing_detect = true
+  output_disk = true
+  output_http = false
 }
 
 if (enable_pkgconf) {
@@ -18,14 +22,72 @@ if (enable_pkgconf) {
     "libavcodec",
     "libswscale",
     "libavutil",
-    "openssl",
   ]
+  if (input_stream) {
+    libdep += [
+    ]
+  }
+  if (processing_detect) {
+    libdep += [
+    ]
+  }
+  if (output_disk) {
+    libdep += [
+    ]
+  }
+  if (output_http) {
+    libdep += [
+      "openssl",
+    ]
+  }
 }
 
 executable("$target") {
-  import("//$srcdir/sources.gni")
+  sources = [
+    "$src/main.cpp",
+    "$src/module.cpp",
+    "$src/module.h",
+    "$src/pipeline.cpp",
+    "$src/pipeline.h",
+    "$src/queue.h",
+    "$src/slot.cpp",
+    "$src/slot.h",
+    "$src/input/dummy.cpp",
+    "$src/input/dummy.h",
+    "$src/processing/dummy.cpp",
+    "$src/processing/dummy.h",
+    "$src/output/dummy.cpp",
+    "$src/output/dummy.h",
+  ]
+  if (input_stream) {
+    sources += [
+      "$src/input/stream.cpp",
+      "$src/input/stream.h",
+    ]
+  }
+  if (processing_detect) {
+    sources += [
+      "$src/processing/detect.cpp",
+      "$src/processing/detect.h",
+    ]
+  }
+  if (output_disk) {
+    sources += [
+      "$src/output/disk.cpp",
+      "$src/output/disk.h",
+    ]
+  }
+  if (output_http) {
+    sources += [
+      "$src/output/http.cpp",
+      "$src/output/http.h",
+    ]
+  }
 
-  cflags = []
+  cflags = [
+    "-fPIC",
+    "-pthread",
+  ]
   if (debug_build) {
     cflags += [
       "-O0",
@@ -48,7 +110,9 @@ executable("$target") {
   ]
   if (debug_build) {
     ldflags += [
-      "-fsanitize=address",
+      # "-fsanitize=thread",
+      # "-fsanitize=memory",
+      # "-fsanitize=address",
       "-fsanitize=undefined",
     ]
   }
@@ -62,9 +126,25 @@ executable("$target") {
       "-lavcodec",
       "-lswscale",
       "-lavutil",
-      "-lcrypto",
-      "-lssl",
     ]
+    if (input_stream) {
+      ldflags += [
+      ]
+    }
+    if (processing_detect) {
+      ldflags += [
+      ]
+    }
+    if (output_disk) {
+      ldflags += [
+      ]
+    }
+    if (output_http) {
+      ldflags += [
+        "-lcrypto",
+        "-lssl",
+      ]
+    }
   }
 
   defines = [
@@ -73,6 +153,26 @@ executable("$target") {
   if (debug_build) {
     defines += [
       "DEBUG",
+    ]
+  }
+  if (input_stream) {
+    defines += [
+      "INPUT_STREAM",
+    ]
+  }
+  if (processing_detect) {
+    defines += [
+      "PROCESSING_DETECT",
+    ]
+  }
+  if (output_disk) {
+    defines += [
+      "OUTPUT_DISK",
+    ]
+  }
+  if (output_http) {
+    defines += [
+      "OUTPUT_HTTP",
     ]
   }
 

@@ -14,8 +14,6 @@ config("compiler_defaults") {
   if (current_os == "freebsd") {
     cflags += [
       "-I/usr/local/include",
-      # "-fPIC",
-      # "-pthread",
     ]
   }
 }

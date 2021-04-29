@@ -4,10 +4,18 @@
 
 #include <glog/logging.h>
 
-#include "input/stream.h"
-#include "processing/detect.h"
-#include "output/disk.h"
-#include "output/http.h"
+#ifdef INPUT_STREAM
+#	include "input/stream.h"
+#endif
+#ifdef PROCESSING_DETECT
+#	include "processing/detect.h"
+#endif
+#ifdef OUTPUT_DISK
+#	include "output/disk.h"
+#endif
+#ifdef OUTPUT_HTTP
+#	include "output/http.h"
+#endif
 
 namespace Sight {
 
@@ -39,8 +47,10 @@ Pipeline::Pipeline(const json& config, size_t id) :
 		std::vector<size_t> queueId(queueIds(config, input));
 		if (input["type"] == "dummy") {
 			mInput.push_back(std::make_unique<Input::Dummy>(input, id, mSlot[id], mQueue, queueId));
+#ifdef INPUT_STREAM
 		} else if (input["type"] == "stream") {
 			mInput.push_back(std::make_unique<Input::Stream>(input, id, mSlot[id], mQueue, queueId));
+#endif
 		}
 	}
 
@@ -52,9 +62,11 @@ Pipeline::Pipeline(const json& config, size_t id) :
 		if (processing["type"] == "dummy") {
 			mProcessing.push_back(std::make_unique<Processing::Dummy>
 			                      (processing, id, mSlot, mQueue[config["output"].size() + id], mQueue, queueId));
+#ifdef PROCESSING_DETECT
 		} else if (processing["type"] == "detect") {
 			mProcessing.push_back(std::make_unique<Processing::Detect>
 			                      (processing, id, mSlot, mQueue[config["output"].size() + id], mQueue, queueId));
+#endif
 		}
 	}
 
@@ -64,10 +76,14 @@ Pipeline::Pipeline(const json& config, size_t id) :
 		auto& output = config["output"][id];
 		if (output["type"] == "dummy") {
 			mOutput.push_back(std::make_unique<Output::Dummy>(output, id, mSlot, mQueue[id]));
+#ifdef OUTPUT_DISK
 		} else if (output["type"] == "disk") {
 			mOutput.push_back(std::make_unique<Output::Disk>(output, id, mSlot, mQueue[id]));
+#endif
+#ifdef OUTPUT_HTTP
 		} else if (output["type"] == "http") {
 			mOutput.push_back(std::make_unique<Output::Http>(output, id, mSlot, mQueue[id]));
+#endif
 		}
 	}
 }
@@ -116,10 +132,12 @@ bool Pipeline::validate(const json& config) {
 			if (!Input::Dummy::validate(input)) {
 				return false;
 			}
+#ifdef INPUT_STREAM
 		} else if (input["type"] == "stream") {
 			if (!Input::Stream::validate(input)) {
 				return false;
 			}
+#endif
 		} else {
 			LOG(ERROR) << "Unknown input type = " << input["type"];
 			return false;
@@ -156,10 +174,12 @@ bool Pipeline::validate(const json& config) {
 			if (!Processing::Dummy::validate(processing)) {
 				return false;
 			}
+#ifdef PROCESSING_DETECT
 		} else if (processing["type"] == "detect") {
 			if (!Processing::Detect::validate(processing)) {
 				return false;
 			}
+#endif
 		} else {
 			LOG(ERROR) << "Unknown processing type = " << processing["type"];
 			return false;
@@ -196,14 +216,18 @@ bool Pipeline::validate(const json& config) {
 			if (!Output::Dummy::validate(output)) {
 				return false;
 			}
+#ifdef OUTPUT_DISK
 		} else if (output["type"] == "disk") {
 			if (!Output::Disk::validate(output)) {
 				return false;
 			}
+#endif
+#ifdef OUTPUT_HTTP
 		} else if (output["type"] == "http") {
 			if (!Output::Http::validate(output)) {
 				return false;
 			}
+#endif
 		} else {
 			LOG(ERROR) << "Unknown output type = " << output["type"];
 			return false;
