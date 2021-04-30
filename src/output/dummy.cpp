@@ -29,15 +29,12 @@ Dummy::Dummy(Dummy&& other) :
 
 Dummy::~Dummy() {
 	for (auto& e : mEncoder) {
-		// Flush the encoder
 		if (e.second.context) {
 			avcodec_send_frame(e.second.context, NULL);
 		}
-		avcodec_close(e.second.context);
 		avcodec_free_context(&e.second.context);
 	}
 	for (auto& p : mPacket) {
-		av_packet_unref(p.second.packet);
 		av_packet_free(&p.second.packet);
 	}
 }
@@ -146,8 +143,6 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 	if (mPacket.contains(streamId)) {
 		if (mPacket[streamId].frameId == frame.coded_picture_number) {
 			return true;
-		} else {
-			av_packet_unref(mPacket[streamId].packet);
 		}
 	} else {
 		Packet pkt = {.packet = av_packet_alloc()};
@@ -155,7 +150,6 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 			LOG(ERROR) << mName << ": Could not allocate packet";
 			return false;
 		}
-		// av_init_packet(pkt.packet);
 		mPacket[streamId] = pkt;
 	}
 
@@ -165,11 +159,9 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 		if (!slot.fresh() && enc.context->codec_id == format && enc.context->pix_fmt == frame.format) {
 		    encoder = &mEncoder[streamId];
 		} else {
-			// Flush the encoder
 			if (enc.context) {
 				avcodec_send_frame(enc.context, NULL);
 			}
-			avcodec_close(enc.context);
 			avcodec_free_context(&enc.context);
 			auto it = mEncoder.find(streamId);
 			mEncoder.erase(it);
@@ -200,7 +192,7 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 		// enc.context->framerate = (AVRational){25, 1};
 
 		if (avcodec_open2(enc.context, enc.codec, NULL) < 0) {
-			avcodec_close(enc.context);
+			avcodec_free_context(&enc.context);
 			LOG(ERROR) << mName << ": Could not open context";
 			return false;
 		}
@@ -214,20 +206,20 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 		response = avcodec_receive_packet(encoder->context, mPacket[streamId].packet);
 		if (response >= 0) {
 			mPacket[streamId].frameId = frame.coded_picture_number;
-			return true;
 		} else {
 			LOG(ERROR) << mName
 			           << ": Could not receive packet, error = " << response
 			           << ", text = " << av_err2str(response);
+			return false;
 		}
 	} else {
 		LOG(ERROR) << mName
 		           << ": Could not send frame, error = " << response
 		           << ", text = " << av_err2str(response);
+		return false;
 	}
 
-	LOG(ERROR) << mName << ": Could not encode packet";
-	return false;
+	return true;
 }
 
 void Dummy::sender() {

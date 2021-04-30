@@ -170,23 +170,17 @@ bool Stream::start() {
 }
 
 void Stream::stop() {
-	// Flush the decoder
 	if (mCodecContext) {
 		avcodec_send_packet(mCodecContext, NULL);
 	}
 
 	avformat_close_input(&mFormatContext);
-	avcodec_close(mCodecContext);
 	avcodec_free_context(&mCodecContext);
-	av_packet_unref(mPacket);
 	av_packet_free(&mPacket);
 
-	mFormatContext = NULL;
 	mCodec = NULL;
 	mCodecParameters = NULL;
-	mCodecContext = NULL;
 	mVideoStream = -1;
-	mPacket = NULL;
 }
 
 Dummy::Result Stream::read(AVFrame* frame) {

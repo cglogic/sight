@@ -55,7 +55,6 @@ Slot::Slot(Slot&& other) :
 
 Slot::~Slot() {
 	clearConverted();
-	av_frame_unref(mSource);
 	av_frame_free(&mSource);
 }
 
@@ -172,6 +171,9 @@ const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scal
 	frame.mSwsContext = sws_getContext(mSource->width, mSource->height, pixFormat,
 	                       width, height, format,
 	                       scale, NULL, NULL, NULL);
+	if (!frame.mSwsContext) {
+		LOG(ERROR) << "Failed to create SwsContext";
+	}
 
 	if (correctRange) {
 		int dummy[4];
