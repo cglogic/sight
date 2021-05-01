@@ -54,11 +54,11 @@ Slot::Slot(Slot&& other) :
 }
 
 Slot::~Slot() {
-	clearConverted();
+	clear();
 	av_frame_free(&mSource);
 }
 
-void Slot::clearConverted() {
+void Slot::clear() {
 	std::lock_guard<std::mutex> lg(mLockFrame);
 	for (auto& f : mFrame) {
 		av_freep(&f.mFrame->data[0]);
@@ -82,11 +82,11 @@ void Slot::wait() const {
 
 void Slot::reset() {
 	if (mSource->width != mWidth || mSource->height != mHeight ||
-	    mSource->pts < mPts || mSource->pkt_dts < mDts) {
+	    mSource->pts <= mPts || mSource->pkt_dts <= mDts) {
 		mWidth = mSource->width;
 		mHeight = mSource->height;
 		mFresh = true;
-		clearConverted();
+		clear();
 	}
 	mPts = mSource->pts;
 	mDts = mSource->pkt_dts;
@@ -111,14 +111,14 @@ AVFrame* Slot::source() {
 	return mSource;
 }
 
-const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scale) {
+const AVFrame* Slot::frame(AVPixelFormat format, int width, int height, int scale) {
 	std::lock_guard<std::mutex> lg(mLockFrame);
 
 	// Default to original frame
 	if ((format == AV_PIX_FMT_NONE) ||
 	    (format == mSource->format  && ((width == 0 && height == 0) ||
 	     (width == mSource->width && height == mSource->height)))) {
-		return *mSource;
+		return mSource;
 	}
 
 	// Tune dimensions to preserve aspect ratio
@@ -141,7 +141,7 @@ const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scal
 				          f.mFrame->height, f.mFrame->data, f.mFrame->linesize);
 				f.mFrame->coded_picture_number = mSource->coded_picture_number;
 			}
-			return *f.mFrame;
+			return f.mFrame;
 		}
 	}
 
@@ -173,6 +173,7 @@ const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scal
 	                       scale, NULL, NULL, NULL);
 	if (!frame.mSwsContext) {
 		LOG(ERROR) << "Failed to create SwsContext";
+		return nullptr;
 	}
 
 	if (correctRange) {
@@ -198,6 +199,7 @@ const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scal
 	if (ret < 0) {
 		av_frame_free(&frame.mFrame);
 		LOG(ERROR) << "Failed to allocate memory for AVFrame buffer";
+		return nullptr;
 	}
 
 	sws_scale(frame.mSwsContext, (const uint8_t* const*)mSource->data, mSource->linesize, 0,
@@ -206,7 +208,7 @@ const AVFrame& Slot::frame(AVPixelFormat format, int width, int height, int scal
 
 	mFrame.push_back(frame);
 
-	return *mFrame.back().mFrame;
+	return mFrame.back().mFrame;
 }
 
 const json& Slot::meta() const {

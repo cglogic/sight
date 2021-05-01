@@ -35,7 +35,7 @@ public:
 	bool fresh() const;
 
 	AVFrame* source();
-	const AVFrame& frame(AVPixelFormat format = AV_PIX_FMT_NONE, int width = 0, int height = 0, int scale = SWS_BICUBIC);
+	const AVFrame* frame(AVPixelFormat format = AV_PIX_FMT_NONE, int width = 0, int height = 0, int scale = SWS_BICUBIC);
 
 	const json& meta() const;
 	json& meta(const std::string& type);
@@ -44,7 +44,7 @@ private:
 	size_t mStreamId = 0;
 	size_t mStageCount = 0;
 
-	void clearConverted();
+	void clear();
 
 	struct Frame {
 		AVFrame* mFrame = NULL;

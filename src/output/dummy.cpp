@@ -29,13 +29,13 @@ Dummy::Dummy(Dummy&& other) :
 
 Dummy::~Dummy() {
 	for (auto& e : mEncoder) {
-		if (e.second.context) {
-			avcodec_send_frame(e.second.context, NULL);
+		if (e.second.mContext) {
+			avcodec_send_frame(e.second.mContext, NULL);
 		}
-		avcodec_free_context(&e.second.context);
+		avcodec_free_context(&e.second.mContext);
 	}
 	for (auto& p : mPacket) {
-		av_packet_free(&p.second.packet);
+		av_packet_free(&p.second.mPacket);
 	}
 }
 
@@ -72,10 +72,6 @@ std::string Dummy::timestampNow() {
 	// LOG(INFO) << mName << ": time" << std::format("%Y-%m-%dT%H:%M:%S.s", tp);
 }
 
-const AVPacket& Dummy::packet(const Slot& slot) {
-	return *mPacket[slot.streamId()].packet;
-}
-
 bool Dummy::start() {
 	if (!mSend.test()) {
 		mSend.test_and_set();
@@ -108,47 +104,57 @@ void Dummy::task() {
 }
 
 bool Dummy::send(Slot& slot) {
-	const AVFrame& frame = slot.frame();
-
-	if (!encode(slot, AV_CODEC_ID_MJPEG)) {
+	const AVFrame* frame = slot.frame();
+	if (frame == nullptr) {
 		LOG(ERROR) << mName << ": Error encodind frame";
 		return false;
 	}
 
-	const AVPacket& picture = packet(slot);
+	const AVPacket* picture = packet(slot, AV_CODEC_ID_MJPEG);
+	if (picture == nullptr) {
+		LOG(ERROR) << mName << ": Error encodind packet";
+		return false;
+	}
+
 	auto& meta = slot.meta();
 
 	LOG(INFO) << mName
 	          << ": Event stream id = " << slot.streamId()
 	          << ", timestamp = " << timestampNow()
-	          << ", frame number = " << frame.coded_picture_number
-	          << ", frame dts = " << frame.pkt_dts
-	          << ", frame pts = " << frame.pts
-	          << ", frame size = " << frame.pkt_size
-	          << ", frame width = " << frame.width
-	          << ", frame height = " << frame.height
-	          << ", packet pts: " << picture.pts
-	          << ", packet dts: " << picture.dts
-	          << ", packet size: " << picture.size
-	          << ", stream index: " << picture.stream_index
+	          << ", frame number = " << frame->coded_picture_number
+	          << ", frame dts = " << frame->pkt_dts
+	          << ", frame pts = " << frame->pts
+	          << ", frame size = " << frame->pkt_size
+	          << ", frame width = " << frame->width
+	          << ", frame height = " << frame->height
+	          << ", packet pts: " << picture->pts
+	          << ", packet dts: " << picture->dts
+	          << ", packet size: " << picture->size
+	          << ", stream index: " << picture->stream_index
 	          << ", meta = " << meta.dump();
 
 	return true;
 }
 
-bool Dummy::encode(Slot& slot, AVCodecID format) {
-	const AVFrame& frame = slot.frame(AV_PIX_FMT_YUVJ420P);
+const AVPacket* Dummy::packet(Slot& slot, AVCodecID format) {
+	const AVFrame* pFrame = slot.frame(AV_PIX_FMT_YUVJ420P);
+	if (pFrame == nullptr) {
+		LOG(ERROR) << mName << ": Error encodind frame";
+		return nullptr;
+	}
+
+	const AVFrame& frame = *pFrame;
 	size_t streamId = slot.streamId();
 
 	if (mPacket.contains(streamId)) {
-		if (mPacket[streamId].frameId == frame.coded_picture_number) {
-			return true;
+		if (mPacket[streamId].mFrameId == frame.coded_picture_number) {
+			return mPacket[streamId].mPacket;
 		}
 	} else {
-		Packet pkt = {.packet = av_packet_alloc()};
-		if (!pkt.packet) {
+		Packet pkt = {.mPacket = av_packet_alloc()};
+		if (!pkt.mPacket) {
 			LOG(ERROR) << mName << ": Could not allocate packet";
-			return false;
+			return nullptr;
 		}
 		mPacket[streamId] = pkt;
 	}
@@ -156,13 +162,13 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 	Encoder* encoder = nullptr;
 	if (mEncoder.contains(streamId)) {
 		auto& enc = mEncoder[streamId];
-		if (!slot.fresh() && enc.context->codec_id == format && enc.context->pix_fmt == frame.format) {
+		if (!slot.fresh() && enc.mContext->codec_id == format && enc.mContext->pix_fmt == frame.format) {
 		    encoder = &mEncoder[streamId];
 		} else {
-			if (enc.context) {
-				avcodec_send_frame(enc.context, NULL);
+			if (enc.mContext) {
+				avcodec_send_frame(enc.mContext, NULL);
 			}
-			avcodec_free_context(&enc.context);
+			avcodec_free_context(&enc.mContext);
 			auto it = mEncoder.find(streamId);
 			mEncoder.erase(it);
 		}
@@ -170,56 +176,56 @@ bool Dummy::encode(Slot& slot, AVCodecID format) {
 
 	if (encoder == nullptr) {
 		Encoder enc;
-		enc.codec = avcodec_find_encoder(format);
-		if (!enc.codec) {
+		enc.mCodec = avcodec_find_encoder(format);
+		if (!enc.mCodec) {
 			LOG(ERROR) << mName << ": Could not find encoder";
-			return false;
+			return nullptr;
 		}
-		enc.context = avcodec_alloc_context3(enc.codec);
-		if (!enc.context) {
+		enc.mContext = avcodec_alloc_context3(enc.mCodec);
+		if (!enc.mContext) {
 			LOG(ERROR) << mName << ": Could not allocate encoder context";
-			return false;
+			return nullptr;
 		}
 
-		enc.context->pix_fmt = (AVPixelFormat)frame.format;
-		enc.context->height = frame.height;
-		enc.context->width = frame.width;
-		// enc.context->global_quality = 5;
-		// enc.context->compression_level = 12;
+		enc.mContext->pix_fmt = (AVPixelFormat)frame.format;
+		enc.mContext->height = frame.height;
+		enc.mContext->width = frame.width;
+		// enc.mContext->global_quality = 5;
+		// enc.mContext->compression_level = 12;
 
 		// We need only one frame, so hardcode these
-		enc.context->time_base = (AVRational){1, 25};
-		// enc.context->framerate = (AVRational){25, 1};
+		enc.mContext->time_base = (AVRational){1, 25};
+		// enc.mContext->framerate = (AVRational){25, 1};
 
-		if (avcodec_open2(enc.context, enc.codec, NULL) < 0) {
-			avcodec_free_context(&enc.context);
+		if (avcodec_open2(enc.mContext, enc.mCodec, NULL) < 0) {
+			avcodec_free_context(&enc.mContext);
 			LOG(ERROR) << mName << ": Could not open context";
-			return false;
+			return nullptr;
 		}
 
 		mEncoder[streamId] = enc;
 		encoder = &mEncoder[streamId];
 	}
 
-	int response = avcodec_send_frame(encoder->context, &frame);
+	int response = avcodec_send_frame(encoder->mContext, &frame);
 	if (response >= 0) {
-		response = avcodec_receive_packet(encoder->context, mPacket[streamId].packet);
+		response = avcodec_receive_packet(encoder->mContext, mPacket[streamId].mPacket);
 		if (response >= 0) {
-			mPacket[streamId].frameId = frame.coded_picture_number;
+			mPacket[streamId].mFrameId = frame.coded_picture_number;
 		} else {
 			LOG(ERROR) << mName
 			           << ": Could not receive packet, error = " << response
 			           << ", text = " << av_err2str(response);
-			return false;
+			return nullptr;
 		}
 	} else {
 		LOG(ERROR) << mName
 		           << ": Could not send frame, error = " << response
 		           << ", text = " << av_err2str(response);
-		return false;
+		return nullptr;
 	}
 
-	return true;
+	return mPacket[streamId].mPacket;
 }
 
 void Dummy::sender() {

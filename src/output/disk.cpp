@@ -45,24 +45,34 @@ bool Disk::start() {
 }
 
 bool Disk::send(Slot& slot) {
-	auto& meta = slot.meta();
-	const AVFrame& frame = slot.frame();
-	LOG(INFO) << mName
-	          << ": Event stream id = " << slot.streamId()
-	          << ", frame number = " << frame.coded_picture_number
-	          << ", frame size = " << frame.pkt_size;
-
-	if (!encode(slot, AV_CODEC_ID_MJPEG)) {
+	const AVFrame* frame = slot.frame();
+	if (frame == nullptr) {
 		LOG(ERROR) << mName << ": Error encodind frame";
 		return true;
 	}
 
-	const AVPacket& picture = packet(slot);
+	const AVPacket* picture = packet(slot, AV_CODEC_ID_MJPEG);
+	if (picture == nullptr) {
+		LOG(ERROR) << mName << ": Error encodind packet";
+		return true;
+	}
+
+	auto& meta = slot.meta();
+
 	LOG(INFO) << mName
-	          << ": Packet pts = " << picture.pts
-	          << ", dts = " << picture.dts
-	          << ", size = " << picture.size
-	          << ", stream index = " << picture.stream_index;
+	          << ": Event stream id = " << slot.streamId()
+	          << ", timestamp = " << timestampNow()
+	          << ", frame number = " << frame->coded_picture_number
+	          << ", frame dts = " << frame->pkt_dts
+	          << ", frame pts = " << frame->pts
+	          << ", frame size = " << frame->pkt_size
+	          << ", frame width = " << frame->width
+	          << ", frame height = " << frame->height
+	          << ", packet pts: " << picture->pts
+	          << ", packet dts: " << picture->dts
+	          << ", packet size: " << picture->size
+	          << ", stream index: " << picture->stream_index
+	          << ", meta = " << meta.dump();
 
 	// Create stream directory if it does not exist
 	fs::path streamDir(mPath / std::to_string(slot.streamId()));
@@ -93,7 +103,7 @@ bool Disk::send(Slot& slot) {
 		           << frameFile;
 		return true;
 	}
-	fileFrame.write(reinterpret_cast<char*>(picture.data), picture.size);
+	fileFrame.write(reinterpret_cast<char*>(picture->data), picture->size);
 
 	// Write meta
 	fs::path metaFile(eventDir / "meta.json");

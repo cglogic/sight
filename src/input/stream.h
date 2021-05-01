@@ -24,6 +24,7 @@ protected:
 	virtual Result read(AVFrame* frame);
 
 private:
+	AVDictionary* mOptions = NULL;
 	AVFormatContext* mFormatContext = NULL;
 	AVCodec* mCodec = NULL;
 	AVCodecParameters* mCodecParameters = NULL;

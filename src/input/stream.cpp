@@ -17,6 +17,19 @@ Stream::Stream(const json& config,
 	if (config.contains("timeout")) {
 		mTimeout = config["timeout"];
 	}
+
+	if (mTimeout > -1) {
+		av_dict_set(&mOptions, "stimeout", std::to_string(mTimeout).c_str(), 0);
+	}
+	// if (true) {
+	// 	av_dict_set(&mOptions, "max_delay", std::to_string(500000).c_str(), 0);
+	// }
+	// if (true) {
+	// 	av_dict_set(&mOptions, "reorder_queue_size", std::to_string(10000).c_str(), 0);
+	// }
+	if (!mProtocol.empty()) {
+		av_dict_set(&mOptions, "rtsp_transport", mProtocol.c_str(), 0);
+	}
 }
 
 Stream::Stream(Stream&& other) :
@@ -27,6 +40,7 @@ Stream::Stream(Stream&& other) :
 }
 
 Stream::~Stream() {
+	av_dict_free(&mOptions);
 }
 
 bool Stream::validate(const json& config) {
@@ -61,29 +75,13 @@ bool Stream::start() {
 		return false;
 	}
 
-	AVDictionary* options = NULL;
-	if (mTimeout > -1) {
-		av_dict_set(&options, "stimeout", std::to_string(mTimeout).c_str(), 0);
-	}
-	// if (true) {
-	// 	av_dict_set(&options, "max_delay", std::to_string(500000).c_str(), 0);
-	// }
-	// if (true) {
-	// 	av_dict_set(&options, "reorder_queue_size", std::to_string(10000).c_str(), 0);
-	// }
-	if (!mProtocol.empty()) {
-		av_dict_set(&options, "rtsp_transport", mProtocol.c_str(), 0);
-	}
-
-	int response = avformat_open_input(&mFormatContext, mUrl.c_str(), NULL, &options);
+	int response = avformat_open_input(&mFormatContext, mUrl.c_str(), NULL, &mOptions);
 	if (response < 0) {
 		LOG(ERROR) << mName
 		           << ": Could not open stream, error = " << response
 		           << ", text = " << std::string(av_err2str(response));
 		return false;
 	}
-
-	av_dict_free(&options);
 
 	response = avformat_find_stream_info(mFormatContext, NULL);
 	if (response < 0) {
@@ -184,7 +182,8 @@ void Stream::stop() {
 }
 
 Dummy::Result Stream::read(AVFrame* frame) {
-	Result result = Result::success;
+	av_packet_unref(mPacket);
+
 	int response = av_read_frame(mFormatContext, mPacket);
 	if (response >= 0) {
 		if (mPacket->stream_index == mVideoStream) {
@@ -201,42 +200,40 @@ Dummy::Result Stream::read(AVFrame* frame) {
 					//           << ") pts " << frame->pts
 					//           << " key_frame " << frame->key_frame
 					//           << " [DTS " << frame->coded_picture_number << "]";
-
-					result = Result::success;
 				} else if (response == AVERROR_EOF) {
-					result = Result::eof;
 					LOG(WARNING) << mName << ": Stream EOF reached by decoder";
+					return Result::eof;
 				} else if (response == AVERROR_INPUT_CHANGED) {
-					result = Result::changed;
 					LOG(WARNING) << mName << ": Stream input changed";
+					return Result::changed;
 				} else if (response == AVERROR(EAGAIN)) {
-					result = Result::again;
+					return Result::again;
 				} else {
-					result = Result::error;
 					LOG(ERROR) << mName
 					           << ": Error while receiving frame from the decoder, error = " << response
 					           << ", text = " << std::string(av_err2str(response));
+					return Result::error;
 				}
 			} else {
-				result = Result::error;
 				LOG(ERROR) << mName
 				           << ": Error while sending a packet to decoder, error = " << response
 				           << ", text = " << std::string(av_err2str(response));
+				return Result::error;
 			}
 		} else {
-			result = Result::unsupported;
+			return Result::unsupported;
 		}
 	} else if (response == AVERROR_EOF) {
-		result = Result::eof;
 		LOG(WARNING) << mName << ": Stream EOF reached by packet reader";
+		return Result::eof;
 	} else {
-		result = Result::error;
 		LOG(ERROR) << mName
 		           << ": Could not read frame, error = " << response
 		           << ", text = " << std::string(av_err2str(response));
+		return Result::error;
 	}
-	av_packet_unref(mPacket);
-	return result;
+
+	return Result::success;
 }
 
 }

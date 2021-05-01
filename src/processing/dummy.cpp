@@ -89,8 +89,8 @@ void Dummy::task() {
 }
 
 bool Dummy::detect([[maybe_unused]]Slot& slot) {
+	// auto& meta = slot.meta(mType);
 	if (mDelay > 0) {
-		// auto& meta = slot.meta(mType);
 		// meta["delayed"] = mDelay;
 		std::this_thread::sleep_for(std::chrono::milliseconds(mDelay));
 	}

@@ -28,13 +28,13 @@ bool Detect::validate(const json& config) {
 }
 
 bool Detect::detect(Slot& slot) {
-	const AVFrame& frame = slot.frame(AV_PIX_FMT_RGB24, 416, 416);
-
-	// Do the work
+	const AVFrame* frame = slot.frame(AV_PIX_FMT_RGB24, 416, 416);
+	if (frame == nullptr) {
+		return false;
+	}
 
 	auto& meta = slot.meta(mType);
-	meta["in"] = 0;
-	meta["out"] = 0;
+	meta["id"] = frame->coded_picture_number;
 
 	return true;
 }

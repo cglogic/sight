@@ -22,9 +22,6 @@ public:
 	virtual ~Dummy();
 
 	static bool validate(const json& config);
-	std::string timestampNow();
-
-	const AVPacket& packet(const Slot& slot);
 
 protected:
 	virtual void task();
@@ -32,7 +29,9 @@ protected:
 	virtual void stop();
 	virtual bool send(Slot& slot);
 
-	bool encode(Slot& slot, AVCodecID format);
+	std::string timestampNow();
+
+	const AVPacket* packet(Slot& slot, AVCodecID format);
 
 	bool mLocalTime = true;
 	size_t mResendInterval = 0;
@@ -48,15 +47,15 @@ private:
 	std::atomic_flag mSend = ATOMIC_FLAG_INIT;
 
 	struct Encoder {
-		AVCodec* codec = NULL;
-		AVCodecContext* context = NULL;
+		AVCodec* mCodec = NULL;
+		AVCodecContext* mContext = NULL;
 	};
 
 	std::map<size_t, Encoder> mEncoder;
 
 	struct Packet {
-		int frameId = 0;
-		AVPacket* packet = NULL;
+		int mFrameId = 0;
+		AVPacket* mPacket = NULL;
 	};
 
 	std::map<size_t, Packet> mPacket;
