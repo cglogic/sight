@@ -229,6 +229,7 @@ const AVPacket* Dummy::packet(Slot& slot, AVCodecID format) {
 }
 
 void Dummy::sender() {
+	pthread_setname_np(pthread_self(), (mName + ":sender").c_str());
 	while (mSend.test()) {
 		if (mSendQueue.ready()) {
 			Slot& slot = mSendQueue.first();

@@ -96,6 +96,7 @@ void Module::deactivate() {
 }
 
 void Module::worker() {
+	pthread_setname_np(pthread_self(), (mName + ":worker").c_str());
 	if (start()) {
 		LOG(INFO) << mName << ": Started";
 		while (mRun.test()) {
