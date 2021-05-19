@@ -12,7 +12,7 @@ Stream::Stream(const json& config,
 	Dummy(config, id, slot, queue, queueId) {
 	mUrl = config["url"];
 
-	if (config.contains("options") && config["options"].is_object()) {
+	if (config.contains("options")) {
 		for (auto& el : config["options"].items()) {
 			std::string value;
 			if (el.value().is_string()) {
