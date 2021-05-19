@@ -23,8 +23,6 @@ Stream::Stream(const json& config,
 			} else if (el.value().is_number()) {
 				int64_t number = el.value();
 				value = std::to_string(number);
-			} else {
-				LOG(ERROR) << mName << ": Unsupported option type";
 			}
 			av_dict_set(&mOptions, el.key().c_str(), value.c_str(), 0);
 		}
@@ -49,6 +47,19 @@ bool Stream::validate(const json& config) {
 	if (!config.contains("url") || !config["url"].is_string() || config["url"].empty()) {
 		LOG(ERROR) << "Url is not exists, not string or empty";
 		return false;
+	}
+	if (config.contains("options")) {
+		if (config["options"].is_object()) {
+			for (auto& el : config["options"].items()) {
+				if (!(el.value().is_string() || el.value().is_number_float() || el.value().is_number())) {
+					LOG(ERROR) << "Unsupported option type";
+					return false;
+				}
+			}
+		} else {
+			LOG(ERROR) << "Options is not an object";
+			return false;
+		}
 	}
 	return true;
 }
