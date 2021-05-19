@@ -60,7 +60,7 @@ bool Disk::send(Slot& slot) {
 	auto& meta = slot.meta();
 
 	LOG(INFO) << mName
-	          << ": Event stream id = " << slot.streamId()
+	          << ": Event stream name = " << slot.streamName()
 	          << ", timestamp = " << timestampNow()
 	          << ", frame number = " << frame->coded_picture_number
 	          << ", frame dts = " << frame->pkt_dts
@@ -75,7 +75,7 @@ bool Disk::send(Slot& slot) {
 	          << ", meta = " << meta.dump();
 
 	// Create stream directory if it does not exist
-	fs::path streamDir(mPath / std::to_string(slot.streamId()));
+	fs::path streamDir(mPath / slot.streamName());
 	if (!fs::directory_entry(streamDir).exists()) {
 		if (!fs::create_directory(streamDir)) {
 			LOG(ERROR) << mName

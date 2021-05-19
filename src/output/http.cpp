@@ -62,7 +62,7 @@ bool Http::send(Slot& slot) {
 	auto& meta = slot.meta();
 
 	LOG(INFO) << mName
-	          << ": Event stream id = " << slot.streamId()
+	          << ": Event stream name = " << slot.streamName()
 	          << ", timestamp = " << timestampNow()
 	          << ", frame number = " << frame->coded_picture_number
 	          << ", frame dts = " << frame->pkt_dts

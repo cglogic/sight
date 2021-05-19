@@ -4,23 +4,25 @@
 
 namespace Sight {
 
-Slot::Slot(size_t streamId, size_t stageCount) :
+Slot::Slot(size_t streamId, const std::string& streamName, size_t stageCount) :
 	mStreamId(streamId),
+	mStreamName(streamName),
 	mStageCount(stageCount) {
 	mSource = av_frame_alloc();
 	if (!mSource) {
-		LOG(ERROR) << "Failed to allocated memory for AVFrame";
+		LOG(ERROR) << "Failed to allocate memory for AVFrame";
 	}
 }
 
 Slot::Slot(const Slot& other) :
 	mStreamId(other.mStreamId),
+	mStreamName(other.mStreamName),
 	mStageCount(other.mStageCount),
 	mMeta(other.mMeta),
 	mFresh(other.mFresh) {
 	mSource = av_frame_alloc();
 	if (!mSource) {
-		LOG(ERROR) << "Failed to allocated memory for AVFrame";
+		LOG(ERROR) << "Failed to allocate memory for AVFrame";
 		return;
 	}
 
@@ -46,6 +48,7 @@ Slot::Slot(const Slot& other) :
 
 Slot::Slot(Slot&& other) :
 	mStreamId(std::exchange(other.mStreamId, 0)),
+	mStreamName(std::move(other.mStreamName)),
 	mStageCount(std::exchange(other.mStageCount, 0)),
 	mMeta(std::move(other.mMeta)),
 	mFresh(std::exchange(other.mFresh, false)),
@@ -105,6 +108,10 @@ void Slot::unref() {
 
 size_t Slot::streamId() const {
 	return mStreamId;
+}
+
+const std::string& Slot::streamName() const {
+	return mStreamName;
 }
 
 AVFrame* Slot::source() {

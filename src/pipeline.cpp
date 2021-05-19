@@ -25,11 +25,12 @@ Pipeline::Pipeline(const json& config, size_t id) :
 	mSlot.reserve(config["input"].size());
 	for (size_t id = 0; id < config["input"].size(); ++id) {
 		mSlot.push_back(std::vector<Slot>());
+		std::string streamName = config["input"][id]["name"];
 		size_t slotCount = slotSize(config, config["input"][id]);
 		size_t stages = stageCount(config, config["input"][id]);
 		mSlot[id].reserve(slotCount + 1);
 		for (size_t slotId = 0; slotId < slotCount + 1; ++slotId) {
-			mSlot[id].push_back(Slot(id, stages));
+			mSlot[id].push_back(Slot(id, streamName, stages));
 		}
 	}
 

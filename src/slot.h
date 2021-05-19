@@ -22,6 +22,7 @@ using json = nlohmann::json;
 class Slot {
 public:
 	Slot(size_t streamId,
+	     const std::string& streamName,
 	     size_t stageCount);
 	Slot(const Slot& slot);
 	Slot(Slot&& slot);
@@ -32,6 +33,7 @@ public:
 	void reset();
 	void unref();
 	size_t streamId() const;
+	const std::string& streamName() const;
 	bool fresh() const;
 
 	AVFrame* source();
@@ -42,6 +44,7 @@ public:
 
 private:
 	size_t mStreamId = 0;
+	std::string mStreamName;
 	size_t mStageCount = 0;
 
 	void clear();
