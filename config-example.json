@@ -7,10 +7,12 @@
 				{
 					"name": "camera-0",
 					"type": "stream",
-					"url": "rtsp://admin:Password1@192.168.88.11",
-					"protocol": "tcp",
-					"timeout": 1000,
 					"live": true,
+					"url": "rtsp://admin:Password1@192.168.88.11",
+					"options": {
+						"rtsp_transport": "tcp",
+						"stimeout": 1000
+					},
 					"out": [
 						"delay-0"
 					]
@@ -18,8 +20,8 @@
 				{
 					"name": "camera-1",
 					"type": "stream",
-					"url": "/data/test.mp4",
 					"live": false,
+					"url": "/data/test.mp4",
 					"out": [
 						"delay-0"
 					]

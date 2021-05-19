@@ -11,24 +11,23 @@ Stream::Stream(const json& config,
                std::vector<size_t>& queueId) :
 	Dummy(config, id, slot, queue, queueId) {
 	mUrl = config["url"];
-	if (config.contains("protocol")) {
-		mProtocol = config["protocol"];
-	}
-	if (config.contains("timeout")) {
-		mTimeout = config["timeout"];
-	}
 
-	if (mTimeout > -1) {
-		av_dict_set(&mOptions, "stimeout", std::to_string(mTimeout).c_str(), 0);
-	}
-	// if (true) {
-	// 	av_dict_set(&mOptions, "max_delay", std::to_string(500000).c_str(), 0);
-	// }
-	// if (true) {
-	// 	av_dict_set(&mOptions, "reorder_queue_size", std::to_string(10000).c_str(), 0);
-	// }
-	if (!mProtocol.empty()) {
-		av_dict_set(&mOptions, "rtsp_transport", mProtocol.c_str(), 0);
+	if (config.contains("options") && config["options"].is_object()) {
+		for (auto& el : config["options"].items()) {
+			std::string value;
+			if (el.value().is_string()) {
+				value = el.value();
+			} else if (el.value().is_number_float()) {
+				double number = el.value();
+				value = std::to_string(number);
+			} else if (el.value().is_number()) {
+				int64_t number = el.value();
+				value = std::to_string(number);
+			} else {
+				LOG(ERROR) << mName << ": Unsupported option type";
+			}
+			av_dict_set(&mOptions, el.key().c_str(), value.c_str(), 0);
+		}
 	}
 }
 
@@ -49,18 +48,6 @@ bool Stream::validate(const json& config) {
 	}
 	if (!config.contains("url") || !config["url"].is_string() || config["url"].empty()) {
 		LOG(ERROR) << "Url is not exists, not string or empty";
-		return false;
-	}
-	if (config.contains("protocol") && (!config["protocol"].is_string() || config["protocol"].empty())) {
-		LOG(ERROR) << "Protocol is not string or empty";
-		return false;
-	}
-	if (config.contains("protocol") && !config["live"]) {
-		LOG(ERROR) << "Protocol is specified but stream is not live";
-		return false;
-	}
-	if (config.contains("timeout") && !config["live"]) {
-		LOG(ERROR) << "Timeout is specified but stream is not live";
 		return false;
 	}
 	return true;
