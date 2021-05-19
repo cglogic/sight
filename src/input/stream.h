@@ -33,8 +33,6 @@ private:
 	AVPacket* mPacket = NULL;
 
 	std::string mUrl = "";
-	std::string mProtocol = "";
-	int64_t mTimeout = -1;
 
 };
 

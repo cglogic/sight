@@ -31,9 +31,7 @@ Stream::Stream(const json& config,
 
 Stream::Stream(Stream&& other) :
 	Dummy(std::move(other)),
-	mUrl(std::move(other.mUrl)),
-	mProtocol(std::move(other.mProtocol)),
-	mTimeout(std::exchange(other.mTimeout, -1)) {
+	mUrl(std::move(other.mUrl)) {
 }
 
 Stream::~Stream() {
