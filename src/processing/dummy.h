@@ -17,13 +17,13 @@ public:
 	      std::vector<Queue<uint32_t>>& queueOut,
 	      std::vector<size_t>& queueOutId);
 	Dummy(const Dummy& other) = delete;
-	Dummy(Dummy&& other);
+	Dummy(Dummy&& other) noexcept;
 	virtual ~Dummy();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual void task();
+	void task() override;
 	virtual bool detect(Slot& slot);
 
 	uint64_t mDelay = 0;

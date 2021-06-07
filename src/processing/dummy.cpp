@@ -25,7 +25,7 @@ Dummy::Dummy(const json& config,
 	}
 }
 
-Dummy::Dummy(Dummy&& other) :
+Dummy::Dummy(Dummy&& other) noexcept :
 	Module(std::move(other)),
 	mDelay(std::exchange(other.mDelay, 0)),
 	mDrop(std::exchange(other.mDrop, false)),

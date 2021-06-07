@@ -16,7 +16,7 @@ public:
 	      std::vector<Queue<uint32_t>>& queue,
 	      std::vector<size_t>& queueId);
 	Dummy(const Dummy& other) = delete;
-	Dummy(Dummy&& other);
+	Dummy(Dummy&& other) noexcept;
 	virtual ~Dummy();
 
 	static bool validate(const json& config);
@@ -31,8 +31,8 @@ protected:
 		error
 	};
 
-	virtual bool start();
-	virtual void task();
+	bool start() override;
+	void task() override;
 	virtual Result read(AVFrame* frame);
 
 	bool mLive = true;

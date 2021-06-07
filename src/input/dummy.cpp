@@ -22,7 +22,7 @@ Dummy::Dummy(const json& config,
 	}
 }
 
-Dummy::Dummy(Dummy&& other) :
+Dummy::Dummy(Dummy&& other) noexcept :
 	Module(std::move(other)),
 	mLive(std::exchange(other.mLive, false)),
 	mSlot(other.mSlot),
@@ -131,15 +131,7 @@ void Dummy::task() {
 			// It can be audio
 			break;
 		case Result::error:
-			// if (mLive) {
-			// 	stop();
-			// 	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-			// 	if (!start()) {
-			// 		deactivate();
-			// 	}
-			// } else {
-			// 	deactivate();
-			// }
+			// Nothing for now
 			break;
 	}
 }

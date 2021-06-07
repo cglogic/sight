@@ -12,13 +12,13 @@ public:
 	     std::vector<std::vector<Slot>>& slot,
 	     Queue<uint32_t>& queue);
 	Http(const Http& other) = delete;
-	Http(Http&& other);
-	virtual ~Http();
+	Http(Http&& other) noexcept;
+	~Http();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual bool send(Slot& slot);
+	bool send(Slot& slot) override;
 
 private:
 	std::string mUrl;

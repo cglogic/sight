@@ -25,7 +25,7 @@ public:
 	     const std::string& streamName,
 	     size_t stageCount);
 	Slot(const Slot& slot);
-	Slot(Slot&& slot);
+	Slot(Slot&& slot) noexcept;
 	~Slot();
 
 	bool ready() const;

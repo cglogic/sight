@@ -17,7 +17,7 @@ Http::Http(const json& config,
 	mApi = config["api"];
 }
 
-Http::Http(Http&& other) :
+Http::Http(Http&& other) noexcept :
 	Dummy(std::move(other)),
 	mUrl(std::move(other.mUrl)),
 	mToken(std::move(other.mToken)),

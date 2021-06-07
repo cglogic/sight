@@ -14,7 +14,7 @@ Disk::Disk(const json& config,
 	mPath(config["path"]) {
 }
 
-Disk::Disk(Disk&& other) :
+Disk::Disk(Disk&& other) noexcept :
 	Dummy(std::move(other)),
 	mPath(std::move(other.mPath)) {
 }

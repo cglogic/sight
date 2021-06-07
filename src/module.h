@@ -15,8 +15,8 @@ public:
 	Module(const json& config,
 	       size_t id);
 	Module(const Module& other) = delete;
-	Module(Module&& other);
-	~Module();
+	Module(Module&& other) noexcept;
+	virtual ~Module();
 
 	void run();
 	bool running() const;

@@ -9,21 +9,21 @@ extern "C" {
 
 #include <nlohmann/json.hpp>
 
-namespace Sight::Processing {
+namespace Sight::Model {
 
 using json = nlohmann::json;
 
-class Model {
+class Dummy {
 public:
-	Model();
-	Model(const Model& other) = delete;
-	Model(Model&& other);
-	virtual ~Model();
+	Dummy();
+	Dummy(const Dummy& other) = delete;
+	Dummy(Dummy&& other);
+	virtual ~Dummy();
 
 	static bool validate(const json& config);
 
 	virtual bool load();
-	virtual bool detect(const AVFrame& image);
+	virtual bool process(const AVFrame& image);
 
 protected:
 	virtual bool preprocess(const AVFrame& image);
