@@ -68,25 +68,22 @@ bool Dummy::validate(const json& config) {
 
 void Dummy::task() {
 	AVFrame* frame = mFrame;
-	bool realFrame = false;
 	auto& slot = mSlot[mSlotId];
 	if (mLive) {
 		if (slot.ready()) {
 			frame = slot.source();
-			realFrame = true;
 		}
 	} else {
 		if (!slot.ready()) {
 			slot.wait();
 		}
 		frame = slot.source();
-		realFrame = true;
 	}
 
 	Result result = read(frame);
 	switch (result) {
 		case Result::success:
-			if (realFrame) {
+			if (frame != mFrame) {
 				slot.reset();
 				for (auto& queueId : mQueueId) {
 					mQueue[queueId].put(pack(mId, mSlotId, true));
