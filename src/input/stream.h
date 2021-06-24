@@ -13,15 +13,15 @@ public:
 	       std::vector<Queue<uint32_t>>& queue,
 	       std::vector<size_t>& queueId);
 	Stream(const Stream& other) = delete;
-	Stream(Stream&& other);
-	virtual ~Stream();
+	Stream(Stream&& other) noexcept;
+	~Stream();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual bool start();
-	virtual void stop();
-	virtual Result read(AVFrame* frame);
+	bool start() override;
+	void stop() override;
+	Result read(AVFrame* frame) override;
 
 private:
 	AVDictionary* mOptions = NULL;

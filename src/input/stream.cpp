@@ -29,7 +29,7 @@ Stream::Stream(const json& config,
 	}
 }
 
-Stream::Stream(Stream&& other) :
+Stream::Stream(Stream&& other) noexcept :
 	Dummy(std::move(other)),
 	mUrl(std::move(other.mUrl)) {
 }

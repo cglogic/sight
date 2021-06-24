@@ -16,14 +16,14 @@ public:
 	     std::vector<std::vector<Slot>>& slot,
 	     Queue<uint32_t>& queue);
 	Disk(const Disk& other) = delete;
-	Disk(Disk&& other);
-	virtual ~Disk();
+	Disk(Disk&& other) noexcept;
+	~Disk();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual bool start();
-	virtual bool send(Slot& slot);
+	bool start() override;
+	bool send(Slot& slot) override;
 
 private:
 	fs::path mPath;

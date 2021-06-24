@@ -2,7 +2,7 @@
 
 #include <glog/logging.h>
 
-namespace Sight::Processing {
+namespace Sight::Model {
 
 Model::Model() {
 }
@@ -21,7 +21,7 @@ bool Model::load() {
 	return true;
 }
 
-bool Model::detect(const AVFrame& image) {
+bool Model::process(const AVFrame& image) {
 	return true;
 }
 

@@ -22,7 +22,7 @@
 				{
 					"name": "delay-0",
 					"type": "dummy",
-					"delay": 0,
+					"delay": 200,
 					"drop" : false,
 					"out": [
 						"detector-0"
@@ -38,7 +38,7 @@
 				{
 					"name": "delay-1",
 					"type": "dummy",
-					"delay": 0,
+					"delay": 200,
 					"drop" : false,
 					"out": [
 						"sender-0"

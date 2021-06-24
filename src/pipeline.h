@@ -20,15 +20,15 @@ public:
 	Pipeline(const json& config,
 	         size_t id);
 	Pipeline(const Pipeline& other) = delete;
-	Pipeline(Pipeline&& other);
-	virtual ~Pipeline();
+	Pipeline(Pipeline&& other) noexcept;
+	~Pipeline();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual bool start();
-	virtual void stop();
-	virtual void task();
+	bool start() override;
+	void stop() override;
+	void task() override;
 
 	static size_t slotSize(const json& config, const json& node);
 	static size_t stageCount(const json& config, const json& node);

@@ -11,7 +11,7 @@ Module::Module(const json& config,
 	mType = config["type"];
 }
 
-Module::Module(Module&& other) :
+Module::Module(Module&& other) noexcept :
 	mId(std::exchange(other.mId, 0)),
 	mName(std::move(other.mName)),
 	mType(std::move(other.mType)) {

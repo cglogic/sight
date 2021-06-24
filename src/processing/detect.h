@@ -14,13 +14,13 @@ public:
 	       std::vector<Queue<uint32_t>>& queueOut,
 	       std::vector<size_t>& queueOutId);
 	Detect(const Detect& other) = delete;
-	Detect(Detect&& other);
-	virtual ~Detect();
+	Detect(Detect&& other) noexcept;
+	~Detect();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual bool detect(Slot& slot);
+	bool detect(Slot& slot) override;
 
 };
 

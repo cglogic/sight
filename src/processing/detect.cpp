@@ -13,7 +13,7 @@ Detect::Detect(const json& config,
 	Dummy(config, id, slot, queueIn, queueOut, queueOutId) {
 }
 
-Detect::Detect(Detect&& other) :
+Detect::Detect(Detect&& other) noexcept :
 	Dummy(std::move(other)) {
 }
 

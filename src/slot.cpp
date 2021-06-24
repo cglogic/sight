@@ -46,7 +46,7 @@ Slot::Slot(const Slot& other) :
 	}
 }
 
-Slot::Slot(Slot&& other) :
+Slot::Slot(Slot&& other) noexcept :
 	mStreamId(std::exchange(other.mStreamId, 0)),
 	mStreamName(std::move(other.mStreamName)),
 	mStageCount(std::exchange(other.mStageCount, 0)),

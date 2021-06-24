@@ -18,15 +18,15 @@ public:
 	      std::vector<std::vector<Slot>>& slot,
 	      Queue<uint32_t>& queue);
 	Dummy(const Dummy& other) = delete;
-	Dummy(Dummy&& other);
+	Dummy(Dummy&& other) noexcept;
 	virtual ~Dummy();
 
 	static bool validate(const json& config);
 
 protected:
-	virtual void task();
-	virtual bool start();
-	virtual void stop();
+	void task() override;
+	bool start() override;
+	void stop() override;
 	virtual bool send(Slot& slot);
 
 	std::string timestampNow();

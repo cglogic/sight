@@ -89,7 +89,7 @@ Pipeline::Pipeline(const json& config, size_t id) :
 	}
 }
 
-Pipeline::Pipeline(Pipeline&& other) :
+Pipeline::Pipeline(Pipeline&& other) noexcept :
 	Module(std::move(other)),
 	mSlot(std::move(other.mSlot)),
 	mQueue(std::move(other.mQueue)),
