@@ -63,8 +63,6 @@ bool Stream::validate(const json& config) {
 }
 
 bool Stream::start() {
-	Dummy::start();
-
 	mFormatContext = avformat_alloc_context();
 	if (!mFormatContext) {
 		LOG(ERROR) << mName << ": Could not allocate memory for Format Context";

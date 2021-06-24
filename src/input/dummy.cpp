@@ -66,25 +66,14 @@ bool Dummy::validate(const json& config) {
 	return true;
 }
 
-bool Dummy::start() {
-	if (mLive) {
-		mDroppedFirst = false;
-	}
-	return true;
-}
-
 void Dummy::task() {
 	AVFrame* frame = mFrame;
 	bool realFrame = false;
 	auto& slot = mSlot[mSlotId];
 	if (mLive) {
-		if (mDroppedFirst) {
-			if (slot.ready()) {
-				frame = slot.source();
-				realFrame = true;
-			}
-		} else {
-			mDroppedFirst = true;
+		if (slot.ready()) {
+			frame = slot.source();
+			realFrame = true;
 		}
 	} else {
 		if (!slot.ready()) {

@@ -31,7 +31,6 @@ protected:
 		error
 	};
 
-	bool start() override;
 	void task() override;
 	virtual Result read(AVFrame* frame);
 
@@ -44,7 +43,6 @@ private:
 
 	AVFrame* mFrame = NULL;
 	uint8_t mSlotId = 0;
-	bool mDroppedFirst = false;
 
 };
 
