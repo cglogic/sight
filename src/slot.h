@@ -39,8 +39,8 @@ public:
 	AVFrame* source();
 	const AVFrame* frame(AVPixelFormat format = AV_PIX_FMT_NONE, int width = 0, int height = 0, int scale = SWS_BICUBIC);
 
-	const json& meta() const;
-	json& meta(const std::string& type);
+	const json& info() const;
+	json& info(const std::string& type);
 
 private:
 	size_t mStreamId = 0;
@@ -59,8 +59,8 @@ private:
 	int64_t mDts = 0;
 	int64_t mPts = 0;
 
-	json mMeta;
-	mutable std::mutex mLockMeta;
+	json mInfo;
+	mutable std::mutex mLockInfo;
 
 	bool mFresh = true;
 	std::atomic_ushort mReference = 0;

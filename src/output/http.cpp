@@ -59,7 +59,7 @@ bool Http::send(Slot& slot) {
 		return true;
 	}
 
-	auto& meta = slot.meta();
+	auto& info = slot.info();
 
 	LOG(INFO) << mName
 	          << ": Event stream name = " << slot.streamName()
@@ -74,7 +74,7 @@ bool Http::send(Slot& slot) {
 	          << ", packet dts: " << picture->dts
 	          << ", packet size: " << picture->size
 	          << ", stream index: " << picture->stream_index
-	          << ", meta = " << meta.dump();
+	          << ", info = " << info.dump();
 
 	std::vector<uint8_t> image;
 	image.assign(picture->data, picture->data + picture->size);
@@ -88,9 +88,9 @@ bool Http::send(Slot& slot) {
 	body["files"].back()["is_main"] = true;
 	body["files"].back()["format"] = "jpg";
 
-	auto& meta = slot.meta();
-	auto mit = meta.end();
-	if (--mit != meta.end()) {
+	auto& info = slot.info();
+	auto mit = info.end();
+	if (--mit != info.end()) {
 		body["event_type"] = mit.key();
 		body["info"] = mit.value();
 	} else {

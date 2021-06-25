@@ -116,7 +116,7 @@ bool Dummy::send(Slot& slot) {
 		return false;
 	}
 
-	auto& meta = slot.meta();
+	auto& info = slot.info();
 
 	LOG(INFO) << mName
 	          << ": Event stream name = " << slot.streamName()
@@ -131,7 +131,7 @@ bool Dummy::send(Slot& slot) {
 	          << ", packet dts: " << picture->dts
 	          << ", packet size: " << picture->size
 	          << ", stream index: " << picture->stream_index
-	          << ", meta = " << meta.dump();
+	          << ", info = " << info.dump();
 
 	return true;
 }

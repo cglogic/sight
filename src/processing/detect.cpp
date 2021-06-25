@@ -33,8 +33,8 @@ bool Detect::detect(Slot& slot) {
 		return false;
 	}
 
-	auto& meta = slot.meta(mType);
-	meta["id"] = frame->coded_picture_number;
+	auto& info = slot.info(mType);
+	info["id"] = frame->coded_picture_number;
 
 	return true;
 }

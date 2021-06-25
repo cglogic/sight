@@ -18,7 +18,7 @@ Slot::Slot(const Slot& other) :
 	mStreamId(other.mStreamId),
 	mStreamName(other.mStreamName),
 	mStageCount(other.mStageCount),
-	mMeta(other.mMeta),
+	mInfo(other.mInfo),
 	mFresh(other.mFresh) {
 	mSource = av_frame_alloc();
 	if (!mSource) {
@@ -50,7 +50,7 @@ Slot::Slot(Slot&& other) noexcept :
 	mStreamId(std::exchange(other.mStreamId, 0)),
 	mStreamName(std::move(other.mStreamName)),
 	mStageCount(std::exchange(other.mStageCount, 0)),
-	mMeta(std::move(other.mMeta)),
+	mInfo(std::move(other.mInfo)),
 	mFresh(std::exchange(other.mFresh, false)),
 	mSource(std::exchange(other.mSource, NULL)),
 	mFrame(std::move(other.mFrame)) {
@@ -100,7 +100,7 @@ void Slot::reset() {
 void Slot::unref() {
 	if (--mReference == 0) {
 		mFresh = false;
-		mMeta.clear();
+		mInfo.clear();
 		mReady.clear();
 		mReady.notify_one();
 	}
@@ -218,16 +218,16 @@ const AVFrame* Slot::frame(AVPixelFormat format, int width, int height, int scal
 	return mFrame.back().mFrame;
 }
 
-const json& Slot::meta() const {
-	return mMeta;
+const json& Slot::info() const {
+	return mInfo;
 }
 
-json& Slot::meta(const std::string& type) {
-	std::lock_guard<std::mutex> lg(mLockMeta);
-	if (!mMeta.contains(type)) {
-		mMeta[type] = json::object();
+json& Slot::info(const std::string& type) {
+	std::lock_guard<std::mutex> lg(mLockInfo);
+	if (!mInfo.contains(type)) {
+		mInfo[type] = json::object();
 	}
-	return mMeta[type];
+	return mInfo[type];
 }
 
 }

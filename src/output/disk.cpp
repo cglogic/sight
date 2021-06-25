@@ -57,7 +57,7 @@ bool Disk::send(Slot& slot) {
 		return true;
 	}
 
-	auto& meta = slot.meta();
+	auto& info = slot.info();
 
 	LOG(INFO) << mName
 	          << ": Event stream name = " << slot.streamName()
@@ -72,7 +72,7 @@ bool Disk::send(Slot& slot) {
 	          << ", packet dts: " << picture->dts
 	          << ", packet size: " << picture->size
 	          << ", stream index: " << picture->stream_index
-	          << ", meta = " << meta.dump();
+	          << ", info = " << info.dump();
 
 	// Create stream directory if it does not exist
 	fs::path streamDir(mPath / slot.streamName());
@@ -105,17 +105,17 @@ bool Disk::send(Slot& slot) {
 	}
 	fileFrame.write(reinterpret_cast<char*>(picture->data), picture->size);
 
-	// Write meta
-	fs::path metaFile(eventDir / "meta.json");
-	std::ofstream fileMeta(metaFile);
-	if (!fileMeta.is_open()) {
+	// Write info
+	fs::path infoFile(eventDir / "info.json");
+	std::ofstream fileInfo(infoFile);
+	if (!fileInfo.is_open()) {
 		LOG(ERROR) << mName
-		           << ": Can't open file to save meta, file = "
-		           << metaFile;
+		           << ": Can't open file to save info, file = "
+		           << infoFile;
 		return true;
 	}
-	std::string metaString = meta.dump(4);
-	fileMeta << metaString;
+	std::string infoString = info.dump(4);
+	fileInfo << infoString;
 
 	return true;
 }
