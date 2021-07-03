@@ -88,7 +88,6 @@ bool Http::send(Slot& slot) {
 	body["files"].back()["is_main"] = true;
 	body["files"].back()["format"] = "jpg";
 
-	auto& info = slot.info();
 	auto mit = info.end();
 	if (--mit != info.end()) {
 		body["event_type"] = mit.key();

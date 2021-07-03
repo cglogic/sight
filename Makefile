@@ -5,7 +5,7 @@ CT?=clang-tidy
 SF!=find -E src -regex ".*\.((c|cc|cpp|cxx)|(h|hh|hpp|hxx))$$"
 TF=$(OUTDIR)/$(TARGET)-trace.out
 
-build:	config
+build:	compdb
 	ninja -C $(OUTDIR)
 
 compdb:	config
