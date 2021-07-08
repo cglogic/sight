@@ -27,14 +27,13 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::InstallFailureSignalHandler();
 	gflags::ParseCommandLineFlags(&argc, &argv, true);
-	LOG(INFO) << "Started";
 
 	LOG(INFO) << "Using config file: " << FLAGS_config;
 	std::ifstream file(FLAGS_config);
 	std::string input, err;
 	if (!file.is_open()) {
 		LOG(ERROR) << "Can't open config file";
-		return EXIT_SUCCESS;
+		return EXIT_FAILURE;
 	}
 
 	file.seekg(0, std::ios::end);
@@ -42,8 +41,8 @@ int main(int argc, char** argv) {
 	file.seekg(0, std::ios::beg);
 	input.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	if (file.fail()) {
-		LOG(ERROR) << "Can't open config file";
-		return EXIT_SUCCESS;
+		LOG(ERROR) << "Can't read config file";
+		return EXIT_FAILURE;
 	}
 
 	json config;
@@ -51,7 +50,7 @@ int main(int argc, char** argv) {
 		config = json::parse(input);
 	} catch (json::parse_error& e) {
 		LOG(ERROR) << "JSON parse error: " << e.what();
-		return EXIT_SUCCESS;
+		return EXIT_FAILURE;
 	}
 	// LOG(INFO) << "Loaded config: \n" << config.dump(4);
 
@@ -71,9 +70,10 @@ int main(int argc, char** argv) {
 		}
 	} else {
 		LOG(ERROR) << "Config has no pipelines";
-		return EXIT_SUCCESS;
+		return EXIT_FAILURE;
 	}
 
+	LOG(INFO) << "Starting";
 	for (auto& p : pipeline) {
 		p->run();
 	}
