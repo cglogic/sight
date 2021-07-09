@@ -21,21 +21,23 @@ namespace Sight::Model {
 using json = nlohmann::json;
 
 class Model
-	: Dummy {
+	: public Dummy {
 public:
-	Model();
+	Model(const json& config);
 	Model(const Model& other) = delete;
 	Model(Model&& other);
 	virtual ~Model();
 
 	static bool validate(const json& config);
 
-	bool load() override;
-	bool process(const AVFrame& image) override;
+	// bool load() override;
+	// bool process(const AVFrame& image) override;
 
 protected:
-	bool preprocess(const AVFrame& image) override;
-	bool postprocess(const AVFrame& image) override;
+	// bool preprocess(const AVFrame& image) override;
+	// bool postprocess(const AVFrame& image) override;
+
+private:
 
 };
 

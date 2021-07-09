@@ -4,10 +4,12 @@
 
 namespace Sight::Model {
 
-Model::Model() {
+Model::Model(const json& config) :
+	Model::Dummy(config) {
 }
 
-Model::Model(Model&& other) {
+Model::Model(Model&& other) :
+	Dummy(std::move(other)) {
 }
 
 Model::~Model() {
@@ -17,7 +19,7 @@ bool Model::validate(const json& config) {
 	return true;
 }
 
-bool Model::load() {
+/* bool Model::load() {
 	return true;
 }
 
@@ -31,6 +33,6 @@ bool Model::preprocess(const AVFrame& image) {
 
 bool Model::postprocess(const AVFrame& image) {
 	return true;
-}
+} */
 
 }
