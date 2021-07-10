@@ -6,6 +6,7 @@ src = "src"
 declare_args() {
   enable_pkgconf = false
   debug_build = true
+  sanitize = "none"
   input_stream = true
   processing_detect = true
   output_disk = true
@@ -83,14 +84,13 @@ executable("$target") {
   ldflags = [
     "-lpthread",
   ]
-  if (debug_build) {
+
+  if (sanitize != "none") {
     ldflags += [
-      # "-fsanitize=thread",
-      # "-fsanitize=memory",
-      # "-fsanitize=address",
-      # "-fsanitize=undefined",
+      "-fsanitize=$sanitize",
     ]
   }
+
   if (enable_pkgconf) {
     ldflags += exec_script("$pkgcmd", ["--libs"] + libdep, "list lines")
   } else {

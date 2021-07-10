@@ -13,7 +13,7 @@ compdb:	config
 	ln -s -f $(OUTDIR)/compile_commands.json compile_commands.json
 
 config:
-	gn --args="debug_build=true" gen $(OUTDIR)
+	gn --args="debug_build=true sanitize=\"none\"" gen $(OUTDIR)
 
 clean:
 	rm -rfv $(OUTDIR)
